@@ -30,7 +30,7 @@
 - BuildingYear: 築年。(なんで和暦なんだよ)['平成2年', '平成19年',戦前、nan...]
 - Structure: ['木造', 'ＲＣ', 'ＳＲＣ', nan, '鉄骨造', '軽量鉄骨造', 'ＲＣ、木造', 'ブロック造', 'ＲＣ、鉄骨造','鉄骨造、木造', '木造、ブロック造', 'ＲＣ、ブロック造']
 - Use: 用途。['住宅', nan, '共同住宅',..]。住宅と共同住宅が大半
-- Purpose:今後の利用目的。['住宅', 'その他', '店舗', '事務所', nan, '工場', '倉庫']
+- Purpose:今後の利用目的。古いデータにはないので注意。['住宅', 'その他', '店舗', '事務所', nan, '工場', '倉庫']
 - Direction: 前面道路の方位
 - Classification: 前面道路の種類(私道、国道、県道 etc)
 - Breadth: 全面道路の道幅。floatOK
@@ -41,3 +41,37 @@
 - FloorPlan: [nan, '２ＬＤＫ', '３ＬＤＫ', '１Ｒ＋Ｓ'...]
 - Renovation: 改装有無。[nan, '改装済', '未改装']
 - Remarks:取引の事情等。[nan, '調停・競売等', '私道を含む取引', '隣地の購入', '関係者間取引', '古屋付き・取壊し前提']。大半がNan
+
+## 各列の下処理
+正規化をするかどうか。
+- Type: 特になし
+- Region: 特になし
+- MunicipalityCode: 特になし
+- Prefecture: コード化して正規化するかどうか
+- DistrictName: 特になし
+- TradePrice: int、万円にする
+- PricePerUnit: float
+- Area: m2消す、float
+- LandShape; 特になし
+- Frontage: m2消す、float
+- UnitPrice: float
+- TotalFloorArea: m2消す、float
+- BuildingYear: 西暦に直す+築年列を作る
+- Structure: 特になし
+- Use: 特になし
+- Purpose: 特になし
+- Direction: 特になし
+- Classification: 特になし
+- Breadth: 特になし
+- CityPlanning: 特になし。ちょっと正規化したい
+- CoverageRatio: float
+- FloorAreaRatio: float
+- Period: XXXX年第Y四半期を年とYに分ける
+- FloorPlan: 特になし
+- Renovation: 特になし
+- Remarks: 特になし。
+
+## 行の削除
+最低限にする
+Type: ['宅地(土地と建物)', '中古マンション等', '宅地(土地)']に絞る
+Remarks: nanに絞る

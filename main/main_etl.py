@@ -1,9 +1,11 @@
 import funcs.etl as etl
 import funcs.getData as getData
+import numpy as np
+import pandas as pd
 
 url = "https://www.land.mlit.go.jp/webland/api/TradeListSearch"
 parameters = {
-    "from": "20111",
+    "from": "20211",
     "to": "20234",
     "area": "14"
 }
@@ -29,8 +31,10 @@ changeDataTypeVal = {
     'FloorAreaRatio':'float'
 }
 extractCondionDic = {
-    'Type':['宅地(土地と建物)', '中古マンション等', '宅地(土地)'],
-    'Remarks': 'Nan'
+    'Type':['宅地(土地と建物)', '中古マンション等'],
+    'Remarks': 'Nan',
+    'Use': ['住宅',  np.nan, '共同住宅', '住宅'],
+    'Purpose':['住宅',  np.nan]
     }
 
 df = getData.getData(url, parameters)
@@ -46,3 +50,6 @@ df2 = etl.makeYearOldatTrade(df2)
 
 file_name = f"RealEstateData_{parameters['from']}_{parameters['to']}_{parameters['area']}.csv"
 df2.to_csv('../datas/'+file_name, index=False)
+
+
+

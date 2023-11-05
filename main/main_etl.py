@@ -5,7 +5,7 @@ import pandas as pd
 
 url = "https://www.land.mlit.go.jp/webland/api/TradeListSearch"
 parameters = {
-    "from": "20211",
+    "from": "20111",
     "to": "20234",
     "area": "14"
 }
@@ -37,6 +37,16 @@ extractCondionDic = {
     'Purpose':['住宅',  np.nan]
     }
 
+addClassOfNonCategoryDataDic ={
+    'TradePrice':[i*1000 for i in range(11)],
+    'Area': [0,20,40,60,80,100,120,140,160,180,200],
+    'TotalFloorArea':[50,70,80,90,100,150,200],
+    'Breadth': [i*2 for i in range(5)],
+    'CoverageRatio':[i for i in [0,30,40,50,60,80]],
+    'FloorAreaRatio': [i*10 for i in [0,10,15,20,30,40]],
+    'AgeAtTrade':  [-2]+[i*5 for i in range(11)]
+}
+
 df = getData.getData(url, parameters)
 df2 = df.drop(drop_cols, axis=1)
 df2 = etl.RemoveM2(df2, needRemoveVal)
@@ -47,6 +57,11 @@ print(df2.shape)
 df2 = etl.changeCalendarBuildingYear(df2)
 df2 = etl.spritPeriodTradeYearQuarter(df2)
 df2 = etl.makeYearOldatTrade(df2)
+for key, values in addClassOfNonCategoryDataDic.items():
+    df2 = etl.add_class_of_noncategory_data(
+        df2, 
+        target_col_=key, 
+        bins_=values)
 
 file_name = f"RealEstateData_{parameters['from']}_{parameters['to']}_{parameters['area']}.csv"
 df2.to_csv('../datas/'+file_name, index=False)

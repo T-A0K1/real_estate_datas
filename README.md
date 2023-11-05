@@ -252,24 +252,30 @@
 
 #### Area
 建物面積
+
 ![Area](./images/histgram_Area_20231105.png)
 
 #### Breadth
 前面道路の道幅
+
 ![Breadth](./images/histgram_Breadth_20231105.png)
 
 #### CoverageRatio
 建ぺい率
+
 ![CoverageRatio](./images/histgram_CoverageRatio_20231105.png)
 
 #### FloorAreaRatio
 容積率
+
 ![FloorAreaRatio](./images/histgram_FloorAreaRatio_20231105.png)
 
 #### TotalFloorArea
 延床面積(建物面積)
+
 ![TotalFloorArea](./images/histgram_TotalFloorArea_20231105.png)
 
 #### TradePrice
-取引価格
+取引価格(万円)
+
 ![TradePrice](./images/histgram_TradePrice_20231105.png)

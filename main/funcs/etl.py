@@ -64,3 +64,16 @@ def makeYearOldatTrade(df_):
     df_['AgeAtTrade'] = df_.TradeYear - df_.BuildingYearW
     return df_
     
+def add_class_of_noncategory_data(df_, target_col_, bins_):
+    # 指定列に対して、指定したbins(左端指定)でのhistgramを作成
+    bins_ = bins_ + [999999]
+
+    df_['Classified_'+target_col_+'_int'] = pd.cut(df_[target_col_], bins=bins_, labels=bins_[:-1])
+    labels_for_str = [str(bins_[i])+'~'+str(bins_[i+1]) for i in range(len(bins_)-2)]
+    labels_for_str = labels_for_str + [str(bins_[-2]) + '~'] #一番大きいラベルは、右端のみ
+    df_['Classified_'+target_col_+'_str'] = pd.cut(df_[target_col_], bins=bins_, labels=labels_for_str)
+    
+    df_['Classified_'+target_col_+'_str'] = df_['Classified_'+target_col_+'_str'].cat.add_categories('Empty').fillna('Empty')
+        
+    return df_
+        

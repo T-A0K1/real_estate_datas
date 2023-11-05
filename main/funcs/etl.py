@@ -21,6 +21,7 @@ def changeDataType(df_,changeDataTypeVal:dict):
     return df_
 
 def extractRow(df_, extractCondionDic):
+    before_len = df_.shape[0]
     # 特定の行の除去
     for col, targetValue in extractCondionDic.items():
         if targetValue =='Nan': # Nanと他のも選びたい場合汎用性ないけど、とりあえず
@@ -28,6 +29,8 @@ def extractRow(df_, extractCondionDic):
         else:
             target_row = df_[col].isin(targetValue)
             df_ = df_[target_row]
+    after_len = df_.shape[1]
+    print(f"before:{before_len}, after:{after_len}")
     return df_
 
 def changeCalendarBuildingYear(df_):

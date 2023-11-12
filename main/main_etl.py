@@ -5,7 +5,7 @@ import pandas as pd
 
 url = "https://www.land.mlit.go.jp/webland/api/TradeListSearch"
 parameters = {
-    "from": "20111",
+    "from": "20221",
     "to": "20234",
     "area": "14"
 }
@@ -47,6 +47,14 @@ addClassOfNonCategoryDataDic ={
     'AgeAtTrade':  [-2]+[i*5 for i in range(11)]
 }
 
+main_cols = [
+    'Type','Prefecture', 'Municipality', 'DistrictName',
+    'Structure', 'FloorPlan',
+    'TradePrice', 'AgeAtTrade','Area',
+    'TotalFloorArea','CoverageRatio', 'FloorAreaRatio',
+    'BuildingYearW','TradeYear', 'TradeQuarter'
+    ]
+
 df = getData.getData(url, parameters)
 df2 = df.drop(drop_cols, axis=1)
 df2 = etl.RemoveM2(df2, needRemoveVal)
@@ -62,9 +70,14 @@ for key, values in addClassOfNonCategoryDataDic.items():
         df2, 
         target_col_=key, 
         bins_=values)
+df2 = etl.add_tradeno(df2)
+df2_main, df2_sub = etl.split_main_sub(df2, main_cols)
 
-file_name = f"RealEstateData_{parameters['from']}_{parameters['to']}_{parameters['area']}.csv"
-df2.to_csv('../datas/'+file_name, index=False)
+file_name_main = f"RealEstateData_{parameters['from']}_{parameters['to']}_{parameters['area']}_main.csv"
+file_name_sub = f"RealEstateData_{parameters['from']}_{parameters['to']}_{parameters['area']}_sub.csv"
+
+df2_main.to_csv('../datas/'+file_name_main, index=False)
+df2_sub.to_csv('../datas/'+file_name_sub, index=False)
 
 
 

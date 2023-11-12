@@ -77,3 +77,18 @@ def add_class_of_noncategory_data(df_, target_col_, bins_):
         
     return df_
         
+def add_tradeno(df_):
+    df_ = df_.sort_values(['Prefecture','MunicipalityCode', 'DistrictName',
+                     'BuildingYearW','TradePrice','Area']).copy()
+    df_['TradeNo'] = range(len(df_))
+    return df_
+
+def split_main_sub(df_, main_cols):
+    df2_main = df_.loc[:,['TradeNo']+main_cols].copy()
+    df2_sub =  df_.drop(main_cols, axis=1).copy()
+    # df2_subの先頭の列をTradeNoにする
+    cols = list(df2_sub.columns)
+    cols = ['TradeNo'] + [col for col in cols if col != 'TradeNo']
+    df2_sub = df2_sub[cols]
+    
+    return df2_main, df2_sub

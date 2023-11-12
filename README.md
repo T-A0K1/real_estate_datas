@@ -279,3 +279,18 @@
 取引価格(万円)
 
 ![TradePrice](./images/histgram_TradePrice_20231105.png)
+
+## 新規作成した列
+前処理の段階で、新規に作成した列
+### XXX_over_flag / XXX_under_flag
+Area等にある"200m以上"や"10m以下"などの文字列を抽出して、記載があったものにflagを立てる列。  
+基本的にそれらは外れ値なのであまり気にしないが、情報が消えるのが懸念なので一応残してある。
+
+### BuildingYearW
+BuildingYear(和暦)を、西暦にしたもの
+
+### TradeYear / TradeQuarter
+Period(取引時期)が2022年第一四半期等の文字列のため、それらを2022 / 1などの数字に置き換えたもの
+
+### AgeAtTrade
+取引時の物件の築年数。TradeYearとBuildYearWから作成。

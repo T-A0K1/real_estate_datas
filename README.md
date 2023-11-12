@@ -294,3 +294,6 @@ Period(取引時期)が2022年第一四半期等の文字列のため、それ�
 
 ### AgeAtTrade
 取引時の物件の築年数。TradeYearとBuildYearWから作成。
+
+### Classified_XXX_int, Classified_XXX_str
+一部の数値列を階級化したもの。intはその階級の始値を、strはx~yの表記。

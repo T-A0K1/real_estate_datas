@@ -4,15 +4,25 @@ import numpy as np
 import pandas as pd
 
 url = "https://www.land.mlit.go.jp/webland/api/TradeListSearch"
-parameters = {
-    "from": "20221",
-    "to": "20234",
-    "area": "14"
-}
 
+# 取得データのパラメータ設定
+save_dir = "../datas/"
+## 
+areas = ['14', '02']
+from_and_to = ['20221', '20234']
+parameters = [
+    {"from": from_and_to[0],
+     "to": from_and_to[1],
+     "area":area
+     }
+    for area in areas
+    ]
+
+# 各種前処理のパラメータ
 drop_cols = ['PricePerUnit', 
             #  'Purpose', 
              'Direction', 'Classification']
+
 # val: m2が含まれる値を、何に置換するか
 needRemoveVal = [
     ['Frontage','m以上','over'], 
@@ -54,30 +64,53 @@ main_cols = [
     'TotalFloorArea','CoverageRatio', 'FloorAreaRatio',
     'BuildingYearW','TradeYear', 'TradeQuarter'
     ]
+# データ取得
+df = pd.DataFrame()
+for param in parameters:
+    df_tmp = getData.getData(url, param)
+    df = pd.concat([df, df_tmp]).reset_index(drop=True)
 
-df = getData.getData(url, parameters)
+# 不要列の削除
 df2 = df.drop(drop_cols, axis=1)
+
+# 数値列を数値に変換
 df2 = etl.RemoveM2(df2, needRemoveVal)
 df2 = etl.changeDataType(df2, changeDataTypeVal)
+
+# 行の抽出(非住宅の除去など)
 print(df2.shape)
 df2 = etl.extractRow(df2, extractCondionDic)
 print(df2.shape)
+
+# 時系列値の整形
 df2 = etl.changeCalendarBuildingYear(df2)
 df2 = etl.spritPeriodTradeYearQuarter(df2)
 df2 = etl.makeYearOldatTrade(df2)
+
+# 数値データのカテゴリ化
 for key, values in addClassOfNonCategoryDataDic.items():
     df2 = etl.add_class_of_noncategory_data(
         df2, 
         target_col_=key, 
         bins_=values)
+    
+# データのtradeNo(ユニークな連番)を追加
 df2 = etl.add_tradeno(df2)
+
+# priceを万円に
+df2['TradePrice'] = df2.TradePrice/10000
+
+# FloorPlan列を整理
+df2 = etl.replace_floor_plan(df2)
+
+# メインの分析対象の列とそうでない列を分割
 df2_main, df2_sub = etl.split_main_sub(df2, main_cols)
 
-file_name_main = f"RealEstateData_{parameters['from']}_{parameters['to']}_{parameters['area']}_main.csv"
-file_name_sub = f"RealEstateData_{parameters['from']}_{parameters['to']}_{parameters['area']}_sub.csv"
+# ファイルの保存
+file_name_main, file_name_sub = etl.make_save_file_name(areas, from_and_to, save_dir)
 
-df2_main.to_csv('../datas/'+file_name_main, index=False)
-df2_sub.to_csv('../datas/'+file_name_sub, index=False)
+df2_main.to_csv(file_name_main, index=False)
+df2_sub.to_csv(file_name_sub, index=False)
 
 
 

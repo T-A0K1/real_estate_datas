@@ -1,4 +1,6 @@
 import pandas as pd
+import mojimoji
+import numpy as np
 
 def RemoveM2(df_, needRemoveVal:list):
     # 指定列のデータからtarget_wordを除去
@@ -29,7 +31,7 @@ def extractRow(df_, extractCondionDic):
         else:
             target_row = df_[col].isin(targetValue)
             df_ = df_[target_row]
-    after_len = df_.shape[1]
+    after_len = df_.shape[0]
     print(f"before:{before_len}, after:{after_len}")
     return df_
 
@@ -92,3 +94,78 @@ def split_main_sub(df_, main_cols):
     df2_sub = df2_sub[cols]
     
     return df2_main, df2_sub
+
+def replace_floor_plan(df):
+    # FloorPlan列を前処理
+    df_ = df.copy()
+    # 0. 元のFloorPlan列をFloorPlanOrigin列として残す
+    df_['FloorPlanOrigin'] = df_['FloorPlan']
+
+    # 1. "FloorPlanFlagDK(K)"列と"FloorPlanFlagS"列と"FloorPlanNumber"列を作る(デフォルト値は0)
+    df_['FloorPlanNumber'] = 0
+
+    # 2. 全角のアルファベットと数字と半角にする
+    # 全角に変換する関数
+    def to_full_width(text):
+        return mojimoji.zen_to_han(text)
+    # Nanがあるとダメなので置換
+    df_['FloorPlan'] = df_.loc[:,['FloorPlan']].fillna('empty')
+    # DataFrameの要素を全角に変換
+    df_['FloorPlan'] = df_.loc[:,['FloorPlan']].applymap(to_full_width)
+
+    # 3. "FloorPlanSTR"列を作成する。デフォルト値はFloorPlan列とする。その後、FloorPlanSTR列の先頭の文字が数字の場合、その数字を除去する
+    df_['FloorPlanSTR'] = df_['FloorPlan'].astype(str)
+    df_['FloorPlanSTR'] = df_['FloorPlan'].astype(str).apply(lambda x: x[1:] if x[0].isdigit() else x)
+
+    # 4. FloorPlan列の先頭の文字が数字の行について、その数字でFloorPlanNumber列を更新する
+    df_['FloorPlanNumber'] = np.where(df_['FloorPlan'].astype(str).apply(lambda x: x[0].isdigit()),
+                                    df_['FloorPlan'].astype(str).apply(lambda x: x[0]), df_['FloorPlanNumber'])
+
+    # 5. FloorPlan列の先頭の文字が数字の行について、その数字を除いた値でFloorPlanSTR列を更新する
+    df_['FloorPlanSTR'] = np.where(df_['FloorPlan'].astype(str).apply(lambda x: x[0].isdigit()),
+                                df_['FloorPlan'].astype(str).apply(lambda x: x[1:]), df_['FloorPlanSTR'])
+    
+    # 6. FloorPlanSTR列が"K"か”DK”かつ、FloorPlanNumber列が1でない行について、FloorPlanNumberを-1して、FloorPlanSTRを"LDK"にする
+    df_['FloorPlanNumber'] = np.where(((df_['FloorPlanSTR'] == 'K') | (df_['FloorPlanSTR'] == 'DK')) &
+                                      (df_['FloorPlanNumber'] != '1'),
+                                      df_['FloorPlanNumber'].astype(int) - 1, df_['FloorPlanNumber'])
+    df_['FloorPlanSTR'] = np.where(((df_['FloorPlanSTR'] == 'K') | (df_['FloorPlanSTR'] == 'DK')) &
+                                   (df_['FloorPlanNumber'] != '1'), 'LDK', df_['FloorPlanSTR'])
+
+    # 7. FloorPlanSTR列が"DK"かつ、FloorPlanNumber列が1の行について、FloorPlanSTRを”K”にする
+    df_['FloorPlanSTR'] = np.where((df_['FloorPlanSTR'] == 'DK') & (df_['FloorPlanNumber'] == '1'), 'K', df_['FloorPlanSTR'])
+
+    # 8. FloorPlanSTR列が"LDK+S"の行について、FloorPlanNumberを+1して、FloorPlanSTRを"LDK"にする
+    df_['FloorPlanNumber'] = np.where((df_['FloorPlanSTR'] == 'LDK+S'),
+                                      df_['FloorPlanNumber'].astype(int) + 1, df_['FloorPlanNumber'])
+    df_['FloorPlanSTR'] = np.where((df_['FloorPlanSTR'] == 'LDK+S'), 'LDK', df_['FloorPlanSTR'])
+
+    # 9. FloorPlanSTR列が"DK+S"もしくは"DK+S"の行について、FloorPlanSTRを"LDK"にする
+    df_['FloorPlanSTR'] = np.where((df_['FloorPlanSTR'] == 'DK+S') | (df_['FloorPlanSTR'] == 'K+S'), 'LDK', df_['FloorPlanSTR'])
+
+    # 10. FloorPlan列を、FloorPlanNumber列とFloorPlanSTR列を連結した値で更新する
+    df_['FloorPlan'] = df_['FloorPlanNumber'].astype(str) + df_['FloorPlanSTR']
+    
+    # 11. FloorPlanSTRがLDK、もしくはFloorPlanが1Kか1Rのもの以外は、FloorPlanを"others"に
+    df_['FloorPlan'] = np.where(~((df_['FloorPlanSTR'] == 'LDK') | (df_['FloorPlan'].isin(['1K', '1R']))),
+                            'others', df_['FloorPlan'])
+    
+    # 12. 元がNanのものはNanに戻す
+    df_['FloorPlan'] = np.where(df_['FloorPlanOrigin'].isna(), np.nan, df_['FloorPlan'])
+    
+    # 13. 不要な列を削除
+    df_ = df_.drop(['FloorPlanSTR', 'FloorPlanNumber'], axis=1)
+
+    return df_
+
+
+def make_save_file_name(areas_, from_and_to_, dir_path_):
+        
+    file_name_base = f"RealEstateData_{from_and_to_[0]}_{from_and_to_[1]}"
+    for area in areas_:
+        file_name_base += f"_{area}"
+    
+    file_name_main = dir_path_+file_name_base+"_main.csv"
+    file_name_sub  = dir_path_+file_name_base+"_sub.csv"
+    
+    return file_name_main, file_name_sub

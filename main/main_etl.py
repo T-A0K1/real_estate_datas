@@ -8,8 +8,8 @@ url = "https://www.land.mlit.go.jp/webland/api/TradeListSearch"
 # 取得データのパラメータ設定
 save_dir = "../datas/"
 ## 
-areas = ['14', '02']
-from_and_to = ['20221', '20234']
+areas = ['14', '13']
+from_and_to = ['20121', '20134']
 parameters = [
     {"from": from_and_to[0],
      "to": from_and_to[1],
@@ -31,7 +31,7 @@ needRemoveVal = [
     ['TotalFloorArea', 'm^2未満','under']
 ]
 changeDataTypeVal = {
-    'TradePrice':'int',
+    'TradePrice':'Int64',
     'Frontage':'float',
     'Area':'int',
     'UnitPrice':'float',
@@ -68,6 +68,7 @@ main_cols = [
 df = pd.DataFrame()
 for param in parameters:
     df_tmp = getData.getData(url, param)
+    df_tmp['PrefectureNo'] = param['area']
     df = pd.concat([df, df_tmp]).reset_index(drop=True)
 
 # 不要列の削除

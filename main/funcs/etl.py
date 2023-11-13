@@ -80,9 +80,13 @@ def add_class_of_noncategory_data(df_, target_col_, bins_):
     return df_
         
 def add_tradeno(df_):
+    # uniqueのNoを付ける。
+    # PrefectureNo+Year+Q+連番。
+    # 末尾の連番はYearQごとではなく、データ取得単位で振るので少し汚いが妥協
     df_ = df_.sort_values(['Prefecture','MunicipalityCode', 'DistrictName',
                      'BuildingYearW','TradePrice','Area']).copy()
-    df_['TradeNo'] = range(len(df_))
+    df_['TradeNo'] = [str(i) for i in range(len(df_))]
+    df_['TradeNo'] = df_['PrefectureNo'] + df_['TradeYear'].astype(str) + df_['TradeQuarter'].astype(str) + df_['TradeNo']
     return df_
 
 def split_main_sub(df_, main_cols):

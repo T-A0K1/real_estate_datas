@@ -1,7 +1,6 @@
 # LGBMでモデルを作成し、指定した説明変数の組み合わせで予測結果を出力しファイルに保存する
 
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
 import datetime as dt
 import lightgbm as lgb
@@ -15,12 +14,12 @@ start_time = dt.datetime.now()
 # ファイル関係
 target_file_dir = "../datas/"
 target_file_names = [
-    "RealEstateData_20111_20164_13_main",
-    "RealEstateData_20171_20234_13_main",
-    "RealEstateData_20111_20234_14_main"
+    "RealEstateData_20121_20154_14_13_main",
+    "RealEstateData_20161_20194_14_13_main",
+    "RealEstateData_20201_20234_14_13_main"
 ]
 target_file_end = ".csv"
-output_file_suffix = "" #出力ファイルに通し番号や区別をつける場合
+output_file_suffix = "_20231126" #出力ファイルに通し番号や区別をつける場合
 output_file_dir = "../datas/"
 output_file_end = ".csv"
 
@@ -127,19 +126,19 @@ df = pd.DataFrame(combinations, columns=['Area', 'TradeYear', 'AgeAtTrade', 'Mun
                                          'TotalFloorArea','CoverageRatio', 'FloorAreaRatio'])
 df2 = pd.DataFrame(combinations_2, columns=['Area', 'TradeYear', 'AgeAtTrade', 'Municipality', 'Structure', 'Type', 
                                          'TotalFloorArea','CoverageRatio', 'FloorAreaRatio'])
-df_dummy_m = pd.concat([df,df2])
-print(df_dummy_m.shape)
+df_dummy = pd.concat([df,df2])
+print(df_dummy.shape)
 
 # カテゴリー変数を、モデル作成時の変換マップの値で置換
-df_dummy_m = df.copy()
+df_dummy_m = df_dummy.copy()
 for category_col in category_cols:
     df_dummy_m[category_col] = df_dummy_m[category_col].map({val: i for i, val in enumerate(mapping_dict[category_col])})
 
 # 予測結果の代入
-df['TradePrice_Predict'] = model.predict(df_dummy_m)
+df_dummy['TradePrice_Predict'] = model.predict(df_dummy_m)
 
 ### でーたの保存
-df.to_csv(output_file_dir + 'RealEstateData_LGBM' + output_file_suffix + output_file_end, index=False)
+df_dummy.to_csv(output_file_dir + 'RealEstateData_LGBM' + output_file_suffix + output_file_end, index=False)
 
 end_time = dt.datetime.now()
 

@@ -15,9 +15,9 @@ from sklearn.metrics import mean_absolute_error
 # ファイル関係
 target_file_dir = "../datas/"
 target_file_names = [
-    "RealEstateData_20111_20164_13_main",
-    "RealEstateData_20171_20234_13_main",
-    "RealEstateData_20111_20234_14_main"
+    "RealEstateData_20121_20154_14_13_main",
+    "RealEstateData_20161_20194_14_13_main",
+    "RealEstateData_20201_20234_14_13_main"
 ]
 target_file_end = ".csv"
 output_file_suffix = "" #出力ファイルに通し番号や区別をつける場合
@@ -83,6 +83,8 @@ print('Intercept:', intercept)
 # MAEの表示
 print('Mean Absolute Error:', mae)
 
+# 切片用テーブル
+df_intercept = pd.DataFrame([select_type, intercept], index=['Type', 'intercept']).T
 
 ### データの保存
 # 説明変数とその切片の値を、記録
@@ -111,3 +113,4 @@ df_coef_cate
 
 df_coef_noncate.to_csv(output_file_dir + 'RealEsateData_重回帰切片_noncate_' + select_type + output_file_suffix + output_file_end, index=False)
 df_coef_cate.to_csv(output_file_dir + 'RealEsateData_重回帰切片_cate_' + select_type + output_file_suffix + output_file_end, index=False)
+df_intercept.to_csv(output_file_dir + 'RealEsateData_重回帰切片_intercept_' + select_type + output_file_suffix + output_file_end, index=False)

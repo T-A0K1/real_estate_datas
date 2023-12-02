@@ -95,23 +95,23 @@ print('Mean Absolute Error:', mae)
 from itertools import product
 
 Type_list = ['宅地(土地と建物)']
-Area_list = [x for x in range(50,101,10)] + [150,200]
-TradeYear_list = [2010,2020,2025]
+Area_list = [x for x in range(20,101,10)] + [150,200]
+TradeYear_list = [2015,2020,2025]
 AgeAtTrade_list = [0,10,20, 30, 40, 50]
 Municipality_list = [x for x in df_origin.Municipality.unique()]
 Structure_list = ['木造']
 TotalFloorArea_list = [x for x in range(50,201,50)] + [np.nan]
-CoverageRatio_list = [40,50,60,80]
-FloorAreaRatio_list = [100,200,300]
+CoverageRatio_list = [60]
+FloorAreaRatio_list = [100, 200, 300, 500]
 #['1K', '1LDK', '1R', '2LDK', '3LDK', '4LDK']
 
 Tyoe_list_2 = ['中古マンション等']
-Municipality_for_m = df_origin.query('Type=="中古マンション等"').pivot_table(index='Municipality', values='Area', aggfunc='count').sort_values('Area').query('Area>20').index
-Municipality_list_2 = [x for x in Municipality_for_m]
+Area_list_2 = [x for x in range(20,101,10)] + [150, 200]
+# Municipality_for_m = df_origin.query('Type=="中古マンション等"').pivot_table(index='Municipality', values='Area', aggfunc='count').sort_values('Area').query('Area>20').index
+# Municipality_list_2 = [x for x in Municipality_for_m]
 TotalFloorArea_list_2 = [np.nan]
-Area_list_2 = [x for x in range(20,101,10)] + [150]
-FloorAreaRatio_list_2 = [200,300,400,500,600]
-CoverageRatio_list_2 = [60,80]
+FloorAreaRatio_list_2 = [100, 200, 300, 500]
+CoverageRatio_list_2 = [80]
 Structure_list_2 = ['ＲＣ']
 
 # 各リストの組み合わせを生成
@@ -126,7 +126,8 @@ df = pd.DataFrame(combinations, columns=['Area', 'TradeYear', 'AgeAtTrade', 'Mun
                                          'TotalFloorArea','CoverageRatio', 'FloorAreaRatio'])
 df2 = pd.DataFrame(combinations_2, columns=['Area', 'TradeYear', 'AgeAtTrade', 'Municipality', 'Structure', 'Type', 
                                          'TotalFloorArea','CoverageRatio', 'FloorAreaRatio'])
-df_dummy = pd.concat([df,df2])
+df_dummy = pd.concat([df,df2]).reset_index(drop=True)
+df_dummy_m = df_dummy.loc[:,X_test.columns]
 print(df_dummy.shape)
 
 # カテゴリー変数を、モデル作成時の変換マップの値で置換

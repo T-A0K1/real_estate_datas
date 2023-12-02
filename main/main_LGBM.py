@@ -16,10 +16,11 @@ target_file_dir = "../datas/"
 target_file_names = [
     "RealEstateData_20121_20154_14_13_main",
     "RealEstateData_20161_20194_14_13_main",
-    "RealEstateData_20201_20234_14_13_main"
+    "RealEstateData_20201_20234_14_13_main",
+    "RealEstateData_20111_20234_01_08_28_27_35_40_main",
 ]
 target_file_end = ".csv"
-output_file_suffix = "_20231126" #出力ファイルに通し番号や区別をつける場合
+output_file_suffix = "_20231202" #出力ファイルに通し番号や区別をつける場合
 output_file_dir = "../datas/"
 output_file_end = ".csv"
 
@@ -127,7 +128,7 @@ df = pd.DataFrame(combinations, columns=['Area', 'TradeYear', 'AgeAtTrade', 'Mun
 df2 = pd.DataFrame(combinations_2, columns=['Area', 'TradeYear', 'AgeAtTrade', 'Municipality', 'Structure', 'Type', 
                                          'TotalFloorArea','CoverageRatio', 'FloorAreaRatio'])
 df_dummy = pd.concat([df,df2]).reset_index(drop=True)
-df_dummy_m = df_dummy.loc[:,X_test.columns]
+df_dummy = df_dummy.loc[:,X_test.columns]
 print(df_dummy.shape)
 
 # カテゴリー変数を、モデル作成時の変換マップの値で置換

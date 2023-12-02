@@ -8,7 +8,7 @@ url = "https://www.land.mlit.go.jp/webland/api/TradeListSearch"
 # 取得データのパラメータ設定
 save_dir = "../datas/"
 ## 
-areas = ['14']
+areas = ['01', '08','28', '27', '35', '40']
 from_and_to = ['20111', '20234']
 parameters = [
     {"from": from_and_to[0],

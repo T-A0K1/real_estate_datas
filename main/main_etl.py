@@ -107,11 +107,14 @@ df2 = etl.replace_floor_plan(df2)
 # メインの分析対象の列とそうでない列を分割
 df2_main, df2_sub = etl.split_main_sub(df2, main_cols)
 
+# 集合住宅のTotalFlooraAreaに集合住宅のAreaを挿入
+df2_main = etl.copy_area_to_total_floor_area(df2_main)
+
+# TotalFloorAreaがnullのデータを除去(おそらく建物が建ってない)
+df2_main = df2_main[~df2_main.TotalFloorArea.isnull()].copy()
+
 # ファイルの保存
 file_name_main, file_name_sub = etl.make_save_file_name(areas, from_and_to, save_dir)
 
 df2_main.to_csv(file_name_main, index=False)
 df2_sub.to_csv(file_name_sub, index=False)
-
-
-

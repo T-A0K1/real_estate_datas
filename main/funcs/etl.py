@@ -173,3 +173,11 @@ def make_save_file_name(areas_, from_and_to_, dir_path_):
     file_name_sub  = dir_path_+file_name_base+"_sub.csv"
     
     return file_name_main, file_name_sub
+
+# 居住部の面積を示す列が、一軒家とマンションで違うので、TotalFloorAreaをそれにする
+# 一軒家：　TotalFloorArea: 建物部の面積 Area:(多分)土地の面積
+# 集合住宅： TotalFloorArea: Nan Area:部屋の面積
+def copy_area_to_total_floor_area(df_):
+    df_.loc[df_.Type=="中古マンション等",'TotalFloorArea'] = df_.loc[df_.Type=="中古マンション等",'Area'].values
+    
+    return df_

@@ -8,16 +8,18 @@ import numpy as np
 import datetime as dt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.metrics import mean_absolute_error
 
 ### パラメータ
 # ファイル関係
 target_file_dir = "../datas/"
 target_file_names = [
-    "RealEstateData_20121_20154_14_13_main",
-    "RealEstateData_20161_20194_14_13_main",
-    "RealEstateData_20201_20234_14_13_main"
+    "RealEstateData_20111_20154_13_14_main",
+    "RealEstateData_20161_20194_13_14_main",
+    "RealEstateData_20201_20234_13_14_main",
+    "RealEstateData_20111_20234_27_35_40_main",
+    "RealEstateData_20111_20234_01_08_28_main",
 ]
 target_file_end = ".csv"
 output_file_suffix = "" #出力ファイルに通し番号や区別をつける場合
@@ -26,11 +28,12 @@ output_file_end = ".csv"
 
 TradePriceThrethold = 15000
 AgeAtTradeThrethold = 50
-select_type = "宅地(土地と建物)" #宅地(土地と建物) 中古マンション等
-use_cols_noncategory = ["TradePrice","Area","TradeYear","AgeAtTrade"]
+select_type = "宅地(土地と建物)" 
+# select_type = "中古マンション等" 
+use_cols_noncategory = ["TradePrice","TotalFloorArea","TradeYear","AgeAtTrade"]
 category_cols = ['Municipality']
 use_cols = use_cols_noncategory + category_cols
-AreaThrethold = 300 if select_type == "宅地(土地と建物)" else 100 if select_type == "中古マンション等" else 0
+TotalFloorAreaThrethold = 500 if select_type == "宅地(土地と建物)" else 150 if select_type == "中古マンション等" else 0
 
 ### データの読み込み
 df_origin = pd.DataFrame()
@@ -39,10 +42,14 @@ for file_name in target_file_names:
     df_origin = pd.concat([df_origin, df], axis=0)
 
 ### データ整形
+# df_origin = df_origin.query('Prefecture!="北海道"')
+
 col_choice_extract = (~df_origin.AgeAtTrade.isnull())&(df_origin.Type==select_type)
-col_choice_threthold = (df_origin.TradePrice<TradePriceThrethold)&(df_origin.Area<AreaThrethold)&(df_origin.AgeAtTrade<AgeAtTradeThrethold)
+col_choice_threthold = (df_origin.TradePrice<TradePriceThrethold)&(df_origin.TotalFloorArea<TotalFloorAreaThrethold)&(df_origin.AgeAtTrade<AgeAtTradeThrethold)
 df_base = df_origin.loc[col_choice_extract&col_choice_threthold,use_cols].copy()
+df_base = df_base.reset_index(drop=True)
 print(df_origin.shape[0], df_origin.loc[col_choice_extract,:].shape[0],df_base.shape[0])
+print(df_base.iloc[36030:36035,:])
 
 # Prefecture列をOne-Hotエンコーディングして新しい列を作成
 df = df_base.copy()
@@ -59,14 +66,14 @@ y = df['TradePrice']
 
 # データの正規化
 scaler = StandardScaler()
-X_normalized = scaler.fit_transform(X)
+# X_normalized = scaler.fit_transform(X)
 X_normalized=X
 
 # 訓練データとテストデータに分割
 X_train, X_test, y_train, y_test = train_test_split(X_normalized, y, test_size=0.2, random_state=42)
 
 # 重回帰分析モデルの構築
-model = LinearRegression()
+model = Ridge()
 model.fit(X_train, y_train)
 
 # モデルの評価（絶対値誤差）
@@ -109,7 +116,7 @@ for i, category_col in enumerate(category_cols):
     df_coef_cate.iloc[now_col:next_col,0]= category_col
     now_col = next_col
 df_coef_cate = df_coef_cate.loc[:,['Type','col_name_value', 'col_name', 'coef']]
-df_coef_cate
+df_coef_cate['coef'] = df_coef_cate.coef.astype('float').round(2)
 
 df_coef_noncate.to_csv(output_file_dir + 'RealEsateData_重回帰切片_noncate_' + select_type + output_file_suffix + output_file_end, index=False)
 df_coef_cate.to_csv(output_file_dir + 'RealEsateData_重回帰切片_cate_' + select_type + output_file_suffix + output_file_end, index=False)

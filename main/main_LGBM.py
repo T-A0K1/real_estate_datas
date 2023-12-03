@@ -14,21 +14,22 @@ start_time = dt.datetime.now()
 # ファイル関係
 target_file_dir = "../datas/"
 target_file_names = [
-    "RealEstateData_20121_20154_14_13_main",
-    "RealEstateData_20161_20194_14_13_main",
-    "RealEstateData_20201_20234_14_13_main",
-    "RealEstateData_20111_20234_01_08_28_27_35_40_main",
+    "RealEstateData_20111_20154_13_14_main",
+    "RealEstateData_20161_20194_13_14_main",
+    "RealEstateData_20201_20234_13_14_main",
+    "RealEstateData_20111_20234_27_35_40_main",
+    "RealEstateData_20111_20234_01_08_28_main",
 ]
 target_file_end = ".csv"
-output_file_suffix = "_20231202" #出力ファイルに通し番号や区別をつける場合
+output_file_suffix = "_20231203" #出力ファイルに通し番号や区別をつける場合
 output_file_dir = "../datas/"
 output_file_end = ".csv"
 
 # 
 TradePriceThrethold = 15000
 AgeAtTradeThrethold = 50
-AreaThrethold = 200
-use_cols_non_cate = ["TradePrice","Area","TradeYear","AgeAtTrade", 'TotalFloorArea', 'CoverageRatio', "FloorAreaRatio"]
+TotalFloorAreaThrethold = 200
+use_cols_non_cate = ["TradePrice","TradeYear","AgeAtTrade", 'TotalFloorArea', 'CoverageRatio', "FloorAreaRatio"]
 category_cols = ['Municipality', 'Structure' ,'Type']
 use_cols = use_cols_non_cate + category_cols
 
@@ -49,9 +50,10 @@ df_origin = pd.DataFrame()
 for file_name in target_file_names:
     df = pd.read_csv(target_file_dir + file_name + target_file_end)
     df_origin = pd.concat([df_origin, df], axis=0)
+print(sum(df_origin.TotalFloorArea.isnull()))
 
 col_choice_extract = (~df_origin.AgeAtTrade.isnull())
-col_choice_threthold = (df_origin.TradePrice<TradePriceThrethold)&(df_origin.Area<AreaThrethold)&(df_origin.AgeAtTrade<AgeAtTradeThrethold)
+col_choice_threthold = (df_origin.TradePrice<TradePriceThrethold)&(df_origin.TotalFloorArea<TotalFloorAreaThrethold)&(df_origin.AgeAtTrade<AgeAtTradeThrethold)
 df_base = df_origin.loc[col_choice_extract&col_choice_threthold,use_cols].copy()
 print(df_origin.shape[0], df_origin.loc[col_choice_extract,:].shape[0],df_base.shape[0])
 
@@ -96,36 +98,35 @@ print('Mean Absolute Error:', mae)
 from itertools import product
 
 Type_list = ['宅地(土地と建物)']
-Area_list = [x for x in range(20,101,10)] + [150,200]
+TotalFloorArea_list = [x for x in range(20,101,10)] + [150,200]
+# Area_list = [50,100,150,200]
 TradeYear_list = [2015,2020,2025]
 AgeAtTrade_list = [0,10,20, 30, 40, 50]
 Municipality_list = [x for x in df_origin.Municipality.unique()]
 Structure_list = ['木造']
-TotalFloorArea_list = [x for x in range(50,201,50)] + [np.nan]
 CoverageRatio_list = [60]
 FloorAreaRatio_list = [100, 200, 300, 500]
 #['1K', '1LDK', '1R', '2LDK', '3LDK', '4LDK']
 
-Tyoe_list_2 = ['中古マンション等']
-Area_list_2 = [x for x in range(20,101,10)] + [150, 200]
+Type_list_2 = ['中古マンション等']
+TotalFloorArea_list_2 = [x for x in range(20,101,10)] + [150, 200]
 # Municipality_for_m = df_origin.query('Type=="中古マンション等"').pivot_table(index='Municipality', values='Area', aggfunc='count').sort_values('Area').query('Area>20').index
 # Municipality_list_2 = [x for x in Municipality_for_m]
-TotalFloorArea_list_2 = [np.nan]
 FloorAreaRatio_list_2 = [100, 200, 300, 500]
 CoverageRatio_list_2 = [80]
 Structure_list_2 = ['ＲＣ']
 
 # 各リストの組み合わせを生成
-combinations= list(product(Area_list, TradeYear_list, AgeAtTrade_list, Municipality_list, Structure_list, Type_list,
+combinations= list(product(TradeYear_list, AgeAtTrade_list, Municipality_list, Structure_list, Type_list,
                             TotalFloorArea_list, CoverageRatio_list, FloorAreaRatio_list))
 
-combinations_2= list(product(Area_list_2, TradeYear_list, AgeAtTrade_list, Municipality_list, Structure_list_2, Tyoe_list_2,
+combinations_2= list(product(TradeYear_list, AgeAtTrade_list, Municipality_list, Structure_list_2, Type_list_2,
                             TotalFloorArea_list_2, CoverageRatio_list_2, FloorAreaRatio_list_2))
 
 # リストからDataFrameを作成
-df = pd.DataFrame(combinations, columns=['Area', 'TradeYear', 'AgeAtTrade', 'Municipality', 'Structure', 'Type', 
+df = pd.DataFrame(combinations, columns=['TradeYear', 'AgeAtTrade', 'Municipality', 'Structure', 'Type', 
                                          'TotalFloorArea','CoverageRatio', 'FloorAreaRatio'])
-df2 = pd.DataFrame(combinations_2, columns=['Area', 'TradeYear', 'AgeAtTrade', 'Municipality', 'Structure', 'Type', 
+df2 = pd.DataFrame(combinations_2, columns=['TradeYear', 'AgeAtTrade', 'Municipality', 'Structure', 'Type', 
                                          'TotalFloorArea','CoverageRatio', 'FloorAreaRatio'])
 df_dummy = pd.concat([df,df2]).reset_index(drop=True)
 df_dummy = df_dummy.loc[:,X_test.columns]
@@ -137,8 +138,8 @@ for category_col in category_cols:
     df_dummy_m[category_col] = df_dummy_m[category_col].map({val: i for i, val in enumerate(mapping_dict[category_col])})
 
 # 予測結果の代入
-df_dummy['TradePrice_Predict'] = model.predict(df_dummy_m)
-
+df_dummy['TradePrice_Predict'] = np.round(model.predict(df_dummy_m))
+df_dummy['TradePrice_Predict'] = df_dummy.TradePrice_Predict.astype('int')
 ### でーたの保存
 df_dummy.to_csv(output_file_dir + 'RealEstateData_LGBM' + output_file_suffix + output_file_end, index=False)
 

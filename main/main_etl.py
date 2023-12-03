@@ -11,7 +11,7 @@ save_dir = "../datas/"
 ## 
 # areas = ['01', '08','28', '27', '35', '40']
 areas = ['01', '08','28' ]
-from_and_to = ['20111', '20234']
+from_and_to = ['20221', '20234']
 parameters = [
     {"from": from_and_to[0],
      "to": from_and_to[1],
@@ -71,11 +71,12 @@ main_cols = [
     ]
 # データ取得
 df = pd.DataFrame()
+print(dt.datetime.now())
 for param in parameters:
-    print(dt.datetime.now())
     df_tmp = getData.getData(url, param)
     df_tmp['PrefectureNo'] = param['area']
     df = pd.concat([df, df_tmp]).reset_index(drop=True)
+    print(dt.datetime.now())
 
 # 不要列の削除
 df2 = df.drop(drop_cols, axis=1)
@@ -107,7 +108,7 @@ for key, values in addClassOfNonCategoryDataDic.items():
 df2 = etl.add_tradeno(df2)
 
 # priceを万円に
-df2['TradePrice'] = df2.TradePrice/10000
+df2['TradePrice'] = (df2.TradePrice/10000).astype('int')
 
 # FloorPlan列を整理
 df2 = etl.replace_floor_plan(df2)

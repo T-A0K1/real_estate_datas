@@ -2,6 +2,7 @@ import funcs.etl as etl
 import funcs.getData as getData
 import numpy as np
 import pandas as pd
+import datetime as dt
 
 url = "https://www.land.mlit.go.jp/webland/api/TradeListSearch"
 
@@ -9,7 +10,7 @@ url = "https://www.land.mlit.go.jp/webland/api/TradeListSearch"
 save_dir = "../datas/"
 ## 
 # areas = ['01', '08','28', '27', '35', '40']
-areas = ['27', '35', '40' ]
+areas = ['01', '08','28' ]
 from_and_to = ['20111', '20234']
 parameters = [
     {"from": from_and_to[0],
@@ -31,7 +32,8 @@ needRemoveVal = [
     ['Area','m&sup2;以上','over'],
     ['Area',',','over'],
     ['TotalFloorArea', '㎡以上','over'],
-    ['TotalFloorArea', 'm^2未満','under']
+    ['TotalFloorArea', 'm^2未満','under'],
+    ['TotalFloorArea', 'm&sup2;以上','over']
 ]
 changeDataTypeVal = {
     'TradePrice':'Int64',
@@ -70,6 +72,7 @@ main_cols = [
 # データ取得
 df = pd.DataFrame()
 for param in parameters:
+    print(dt.datetime.now())
     df_tmp = getData.getData(url, param)
     df_tmp['PrefectureNo'] = param['area']
     df = pd.concat([df, df_tmp]).reset_index(drop=True)

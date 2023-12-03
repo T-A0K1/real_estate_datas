@@ -8,7 +8,8 @@ url = "https://www.land.mlit.go.jp/webland/api/TradeListSearch"
 # 取得データのパラメータ設定
 save_dir = "../datas/"
 ## 
-areas = ['01', '08','28', '27', '35', '40']
+# areas = ['01', '08','28', '27', '35', '40']
+areas = ['27', '35', '40' ]
 from_and_to = ['20111', '20234']
 parameters = [
     {"from": from_and_to[0],
@@ -27,6 +28,8 @@ drop_cols = ['PricePerUnit',
 needRemoveVal = [
     ['Frontage','m以上','over'], 
     ['Area','㎡以上','over'],
+    ['Area','m&sup2;以上','over'],
+    ['Area',',','over'],
     ['TotalFloorArea', '㎡以上','over'],
     ['TotalFloorArea', 'm^2未満','under']
 ]
@@ -73,6 +76,8 @@ for param in parameters:
 
 # 不要列の削除
 df2 = df.drop(drop_cols, axis=1)
+
+df2.to_csv('../datas/debug_data.csv', index=False)
 
 # 数値列を数値に変換
 df2 = etl.RemoveM2(df2, needRemoveVal)
